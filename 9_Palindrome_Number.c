@@ -63,3 +63,25 @@ bool isPalindrome(int x) {
 #endif
     return result;
 }
+
+
+//version 2
+
+bool isPalindrome(int x) {
+
+    long inverseNum = 0; //if declar as int, it may occur overflow 
+    int TempX = x;
+
+    if (x < 0)
+        return false;
+
+    while (TempX > 0) {
+        inverseNum = (inverseNum * 10) + (TempX % 10);
+        TempX /= 10;
+    }
+
+    if (inverseNum == x)
+        return true;
+    else
+        return false;
+}
