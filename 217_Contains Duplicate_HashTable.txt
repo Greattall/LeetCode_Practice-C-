@@ -1,0 +1,90 @@
+#define MAX_ARRAY_SIZE 100001
+#define MAX_HASH_BUCKET_SIZE 5
+
+typedef struct HASHTABLE
+{
+    int exist; //exist numbers
+    int value[MAX_HASH_BUCKET_SIZE]; 
+}stHASHTABLE;
+
+int hash(int k)
+{
+    return (abs(k) % MAX_ARRAY_SIZE);
+}
+
+bool comparsion(int target , int* array , int array_Size)
+{
+    int i;
+    for(int i=0;i<array_Size;i++)
+    {
+        if(target == array[i])
+            return true;
+    }
+    return false;
+}
+
+bool containsDuplicate(int* nums, int numsSize) {
+
+    stHASHTABLE hashtable[MAX_ARRAY_SIZE] = {0};
+    
+    int index = 0;
+    int hash_position = 0;
+    int i;
+    for(index = 0 ; index < numsSize ; index++)
+    {
+        if(hashtable[hash(nums[index])].exist > 0)
+        {
+            //check 
+            //if((nums[index] == hashtable[hash(nums[index])].value[0]) || ((nums[index] == hashtable[hash(nums[index])].value[1])))
+            if(comparsion(nums[index], hashtable[hash(nums[index])].value, MAX_HASH_BUCKET_SIZE))
+            {
+                return true;
+            }
+            else
+            {
+                hashtable[hash(nums[index])].exist ++;
+                hash_position = hashtable[hash(nums[index])].exist - 1 ;
+                if(hash_position >= MAX_HASH_BUCKET_SIZE)
+                {
+                    printf("A exceed array size index =%d\n",index);
+                    return false;
+                }
+                hashtable[hash(nums[index])].value[hash_position] = nums[index];
+            }
+        }
+        else
+        {
+                hashtable[hash(nums[index])].exist ++;
+                hash_position = hashtable[hash(nums[index])].exist - 1 ;
+                if(hash_position >= MAX_HASH_BUCKET_SIZE)
+                {
+                    printf("B exceed array size index =%d\n",index);
+                    return false;
+                }
+                hashtable[hash(nums[index])].value[hash_position] = nums[index];
+        }
+    }
+
+    return false;
+}
+
+
+/*
+容量上限的處理：桶子只能放 5 個，超過就 return false，這是錯誤的行為。題目要求的是「只要有重複就回傳 true」，但這裡在桶子滿時直接回傳 false，若前面沒有重複，後面有重複也會被漏掉。這是這段程式最需要修正的地方。
+
+與標準做法的比較
+項目	   你的做法	                   標準鏈結法 / 開放定址
+碰撞處理	固定大小桶子 + 線性搜尋  	 鏈結串列 或 探測序列
+桶子滿了	直接回傳 false（有 bug）  	 串列可無限延長，或擴容
+記憶體	    固定、可預測	             依元素數量動態配置
+查重方式	桶內線性掃描	             串列掃描 / 探測
+
+
+改進建議
+修正桶子滿的邏輯：桶子滿時不該回傳 false，應該改用動態陣列或鏈結串列擴充，或是桶子滿了就直接改用其他策略。
+避免 abs(INT_MIN)：可以改用 (unsigned int)k % MAX_ARRAY_SIZE，或是先轉成 long long 再處理。
+大陣列放在 stack 上的風險：可以加 static，或改用 calloc。
+comparsion 函式的變數遮蔽：參數裡的 int i 和迴圈裡的 int i 同名，編譯器通常不會報錯，但容易混淆，可以只保留一個。
+
+整體來說，這是一個自己寫的、帶固定容量桶子的雜湊表，思路正確，但桶子滿時的處理是錯的，這會導致 LeetCode 上某些測資答錯。修正方式是把桶子改成可以擴充的結構。
+*/
